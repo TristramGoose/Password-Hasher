@@ -8,21 +8,66 @@ import java.security.spec.InvalidKeySpecException;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Random;
 
+/**
+ * <p>This class contains methods for the generation and comparison of hashes.</p>
+ * 
+ * <p> Algorithms available for use can be found in the
+ * <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#SecretKeyFactory">
+ * SecretKeyFactory section</a>	of the <br>Java Cryptography Architecture Standard Algorithm Name Documentation.</p>
+ * 
+ * <p>This class must be initialized before instantiation with the
+ * {@link #init(String, int, int, int) init()} method.
+ * <b>This can only be done once.</b></p> 
+ * 
+ * <p><b>The thread safety of this class is unknown</b></p>
+ * 
+ * @version 1.0
+ * @author Tristan A. Guice
+ */
 public class SecurePass {
-	private static String _algorithm;  		// Algorithm identifier string Ex. "PBKDF2WithHmacSHA512"
-	private static int _saltLength;    		// Desired salt length in bits
-	private static int _derivedKeyLength;     	// Desired derived key length in bits
-	private static int _iterations;    		// Iterations of the pbkdf2 algorithm	
-	private static boolean _isInitialized = false; 	// Flag for whether SecurePass is initialized
-
-	public SecurePass() {}
+	/**Algorithm identifier String*/
+	private static String _algorithm;
 	
+	/**Salt bit length*/
+	private static int _saltLength;
+	
+	/** Derived key bit length*/
+	private static int _derivedKeyLength;
+	
+	/** Number of times the algorithm should iterate*/
+	private static int _iterations;
+	
+	/** Flag to check for SecurePass initialization */
+	private static boolean _isInitialized = false; 	
+
+	/** 
+	 *  The Default Constructor
+	 *  @throws SecurePassInitializationException if the class has yet to be initialized with
+	 *  {@link #init(String, int, int, int) init()}
+	 */
+	public SecurePass() {
+		if(_isInitialized == false) {
+			throw new SecurePassInitializationException(
+					"Exception: SecurePass must be initialized with init() first.");
+		}
+	}
+	
+	/**
+	 * <p>Initializes the static member variables needed for hashing.</p>
+	 * This method must be called before the class is instantiated.
+	 * @param algorithm the algorithm identifier String. Click 
+	 * 		  <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#SecretKeyFactory">Here</a>
+	 * 		  for options.  
+	 * @param hashLength the unsalted hash bit length
+	 * @param saltLength the salt length in bits
+	 * @param iterations the number of iterations used by the hashing algorithm
+	 * @throws RuntimeException if the method is called more than once
+	 */
 	public static synchronized void init(String algorithm,  
-					     int keyLength, 
+					     int hashLength, 
 					     int saltLength, 
 					     int iterations)
 	{
@@ -30,7 +75,7 @@ public class SecurePass {
 			_algorithm = algorithm;
 			_iterations = iterations;
 			_saltLength = saltLength;
-			_derivedKeyLength = keyLength + saltLength;
+			_derivedKeyLength = hashLength + saltLength;
 			_isInitialized = true;
 		}
 		else {
@@ -38,12 +83,25 @@ public class SecurePass {
 		}
 	}
 	
+	/**
+	 * <p>Stores the hash and the salt used to salt the hash into an array
+	 * and encodes them with base64 encoding.</p>
+	 * <p>Index 0 contains the salt used
+	 * to salt the hash and index 1 contains the salted hash.</p>
+	 * @param salt the salt used to salt the hash
+	 * @param hash the salted hash
+	 * @return the salt used and the salted hash
+	 */
 	private String[] formatHashReturnVal(byte[] salt, byte[] hash) {
 		String[] record = {encodeBase64(salt), encodeBase64(hash)};
 		
 		return record;
 	}
 	
+	/**
+	 * Creates a cryptographically strong random number
+	 * @return the salt
+	 */
 	private byte[] createSalt() {
 		Random rand = new SecureRandom();
 		byte[] salt = new byte[_saltLength];
@@ -53,7 +111,16 @@ public class SecurePass {
 		return salt;
 	}
 	
-	// For use with authenticate()
+	/**
+	 * Computes a hash with a given salt
+	 * 
+	 * @param password the plain text password
+	 * @param salt the salt used to salt the password
+	 * @return the salted hash
+	 * @throws IllegalArgumentException if the algorithm specified in  
+	 * {@link #init(String, int, int, int) init()} doesn't exist or 
+	 * if the key specification is invalid
+	 */
 	private byte[] computeSaltedHash(char[] password, byte[] salt)  {
 		SecretKeyFactory sFactory;
 		byte[] hash;
@@ -74,6 +141,14 @@ public class SecurePass {
 		return hash;
 	}
 	
+	/**
+	 * Computes a hash from a char[], salts it, and key lengthens it
+	 * @param password the plain text password
+	 * @return the salt used in the hash (index 0) and the salted hash (index 1)
+	 * @throws IllegalArgumentException if the algorithm specified in  
+	 * {@link #init(String, int, int, int) init()} doesn't exist or 
+	 * if the key specification is invalid
+	 */
 	public String[] computeSaltedHash(char[] password) {
 		SecretKeyFactory sFactory;
 		PBEKeySpec spec;
@@ -96,15 +171,29 @@ public class SecurePass {
 		return formatHashReturnVal(salt, hash);
 	}
 	
-	public boolean authenticate(char[] password, String storedSalt, String storedPw) {
-		byte[] storedPw1  = decodeBase64(storedPw);
-		byte[] storedSalt1 = decodeBase64(storedSalt);
+	/**
+	 * Compares a password with a hash to determine if the hash came from that password
+	 * @param password the password to be hashed and compared
+	 * @param salt the salt originally used to salt the hashed password
+	 * @param hashedPw the salted and hashed password
+	 * @return true if they matched
+	 */
+	public boolean authenticate(char[] password, String salt, String hashedPw) {
+		byte[] hashedPw1  = decodeBase64(hashedPw);
+		byte[] salt1 = decodeBase64(salt);
 		
-		byte[] enteredPw = computeSaltedHash(password, storedSalt1);
+		byte[] pw = computeSaltedHash(password, salt1);
 			
-		return slowEquals(enteredPw, storedPw1);		
+		return slowEquals(pw, hashedPw1);		
 	}	
 	
+	/**
+	 * Compares two byte[]s.
+	 * <br>Method execution time is constant to prevent timing attacks
+	 * @param a array to be compared
+	 * @param b array to be compared
+	 * @return true if the arrays are equal
+	 */
 	private boolean slowEquals(byte[] a, byte[] b) {	
 		int isDifferent = a.length ^ b.length;
 		
@@ -115,26 +204,53 @@ public class SecurePass {
 		return isDifferent == 0;	
 	}
 	
-	public String encodeBase64(byte[] b) {	
+	/**
+	 * Converts a byte[] into a String with base64 encoding
+	 * @param b the byte array
+	 * @return base64 encoded String
+	 */
+	private String encodeBase64(byte[] b) {	
 		return Base64.getEncoder().encodeToString(b);
 	}
 	
-	public byte[] decodeBase64(String str) {	
+	/**
+	 * Converts and decodes a base64 encoded String into
+	 * a byte[]
+	 * @param str base64 encoded String
+	 * @return decoded byte[] array
+	 */
+	private byte[] decodeBase64(String str) {	
 		return Base64.getDecoder().decode(str.getBytes(Charset.forName("UTF-8")));
 	}
 	
+	/**
+	 * Returns the hashing algorithm in use.
+	 * @return the hashing algorithm in use.
+	 */
 	public static String getAlgorithm() {
 		return _algorithm;
 	}
 	
+	/**
+	 * Returns the salts set bit length.
+	 * @return the salts set bit length. 
+	 */
 	public static int getSaltLength() {
 		return _saltLength;
 	}
 	
+	/**
+	 * Returns the bit length of the key that {@link #computeSaltedHash(char[]) will return}
+	 * @return the bit length of the key that {@link #computeSaltedHash(char[]) will return}
+	 */
 	public static int getKeyLength() {
 		return _derivedKeyLength;
 	}
 	
+	/** 
+	 * Returns the number of iterations the hashing algorithm will perform
+	 * @return the number of iterations the hashing algorithm will perform
+	 */
 	public static int getIterations() {
 		return _iterations;
 	}	

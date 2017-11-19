@@ -1,6 +1,7 @@
 # Password-Hasher
 Java password hashing and authentication package. 
 
+I wouldn't recommend using this repository for anything important, go use one that has been proven safe.
 <br />Supports hashing algorithms like: 
 <ul>
   <li>PBKDF2-HMAC-SHA1</li>
@@ -15,7 +16,7 @@ contributions are welcome just be prepaired for me to pick your brain on what yo
 Rules:
 <ul>
   <li>Try to keep your programming style similar to that which is already being used.</li>
-  <li>Every time I see a variable name start with a $dollar sign I die inside a little. Please avoid!</li>
+  <li>Every time I see a variable name start with a $dollar sign I die a little inside. Please avoid!</li>
   <li>Keep conversations civil and about programming. Please no profanity.</li>.
 </ul>
 </p>

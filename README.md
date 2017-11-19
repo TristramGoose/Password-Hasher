@@ -1,5 +1,6 @@
 # Password-Hasher
 Java password hashing and authentication package. 
+
 <br />Supports hashing algorithms like: 
 <ul>
   <li>PBKDF2-HMAC-SHA1</li>

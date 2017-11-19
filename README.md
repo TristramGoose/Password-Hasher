@@ -4,18 +4,18 @@ PBKDF2-HMAC-SHA1
 PBKDF2-HMAC-SHA256
 PBKDF2-HMAC-SHA512
 
-Project is currently in development
-All I can say about current reliability is that it has worked properly with proper input so far 
-and I hope to have some more rigourous tests made up within the week.
+
+<p>Project is currently undergoing testing
 
 Contributions: This is a personal project of mine that I am doing to learn the process of safely storing passwords.
 contributions are welcome just be prepaired for me to pick your brain on what you want to change/add in my quest for knowledge!
-
 Rules:
-  -Try to keep your programming style similar to that which is already being used.
-  -Every time I see a variable name start with a $dollar sign I die inside a little. Please avoid!
-  -Keep conversations civil and about programming. Please no profanity.
+<ul>
+  <li>Try to keep your programming style similar to that which is already being used.</li>
+  <li>Every time I see a variable name start with a $dollar sign I die inside a little. Please avoid!</li>
+  <li>Keep conversations civil and about programming. Please no profanity.</li>.
+</ul>
+</p>
 
 
-
-Author: TristramGoose
+<p>Author: TristramGoose</p>

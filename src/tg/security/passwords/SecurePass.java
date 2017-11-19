@@ -92,7 +92,7 @@ public class SecurePass {
 	 * @param hash the salted hash
 	 * @return the salt used and the salted hash
 	 */
-	private String[] formatHashReturnVal(byte[] salt, byte[] hash) {
+	private String[] formatHashRec(byte[] salt, byte[] hash) {
 		String[] record = {encodeBase64(salt), encodeBase64(hash)};
 		
 		return record;
@@ -121,7 +121,7 @@ public class SecurePass {
 	 * {@link #init(String, int, int, int) init()} doesn't exist or 
 	 * if the key specification is invalid
 	 */
-	private byte[] computeSaltedHash(char[] password, byte[] salt)  {
+	private byte[] computeHash(char[] password, byte[] salt)  {
 		SecretKeyFactory sFactory;
 		byte[] hash;
 		
@@ -149,7 +149,7 @@ public class SecurePass {
 	 * {@link #init(String, int, int, int) init()} doesn't exist or 
 	 * if the key specification is invalid
 	 */
-	public String[] computeSaltedHash(char[] password) {
+	public String[] computeHash(char[] password) {
 		SecretKeyFactory sFactory;
 		PBEKeySpec spec;
 		byte[] hash = null;
@@ -168,7 +168,7 @@ public class SecurePass {
 			spec.clearPassword();
 		}
 		
-		return formatHashReturnVal(salt, hash);
+		return formatHashRec(salt, hash);
 	}
 	
 	/**
@@ -182,7 +182,7 @@ public class SecurePass {
 		byte[] hashedPw1  = decodeBase64(hashedPw);
 		byte[] salt1 = decodeBase64(salt);
 		
-		byte[] pw = computeSaltedHash(password, salt1);
+		byte[] pw = computeHash(password, salt1);
 			
 		return slowEquals(pw, hashedPw1);		
 	}	
@@ -240,8 +240,8 @@ public class SecurePass {
 	}
 	
 	/**
-	 * Returns the bit length of the key that {@link #computeSaltedHash(char[]) will return}
-	 * @return the bit length of the key that {@link #computeSaltedHash(char[]) will return}
+	 * Returns the bit length of the key that {@link #computeHash(char[]) will return}
+	 * @return the bit length of the key that {@link #computeHash(char[]) will return}
 	 */
 	public static int getKeyLength() {
 		return _derivedKeyLength;

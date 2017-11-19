@@ -26,7 +26,7 @@ public class Test {
 		char[] testPw = pw.toCharArray();
 		
 		// Record[0] has the salt used. Record[1] has the hash
-		String[] record = pass.computeSaltedHash(testPw);
+		String[] record = pass.computeHash(testPw);
 		
 		String sMessage = "authentication: SUCCESS!\n";
 		String fMessage = "authentication: FAILED\n";

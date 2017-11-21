@@ -184,7 +184,7 @@ public class SecurePass {
 		
 		byte[] pw = computeHash(password, salt1);
 			
-		return slowEquals(pw, hashedPw1);		
+		return constantTimeEquals(pw, hashedPw1);		
 	}	
 	
 	/**
@@ -194,7 +194,7 @@ public class SecurePass {
 	 * @param b array to be compared
 	 * @return true if the arrays are equal
 	 */
-	private boolean slowEquals(byte[] a, byte[] b) {	
+	private boolean constantTimeEquals(byte[] a, byte[] b) {	
 		int isDifferent = a.length ^ b.length;
 		
 		for (int i = 0; i < a.length && i < b.length; ++i) {

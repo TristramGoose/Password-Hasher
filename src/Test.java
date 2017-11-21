@@ -17,7 +17,7 @@ public class Test {
 		final int ITERATIONS = 50000;
 		final int SALT_LENGTH = 64; 					  // Bits
 		final int DESIRED_KEY_LENGTH = 512 + SALT_LENGTH; // Bits
-	
+		
 		// Initializes SecurePass, can only be called once. SHOULD be thread safe
 		SecurePass.init(ALGORITHM, DESIRED_KEY_LENGTH, SALT_LENGTH, ITERATIONS);
 		
